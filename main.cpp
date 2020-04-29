@@ -234,9 +234,101 @@ template<typename T, int S>
 struct TreeHelper<BNode<T, S>,B_NODE_FLAGXX>{
   typedef BNode<T, S>  node_t;
   typedef typename node_t::value_t value_t;
+
+  static void split (node_t * father, int id){
+    node_t * ynode = new node_t;
+    node_t * znode = new node_t;
+
+    int med = (S - 1) / 2;
+
+    for (int i = 0; i < med ; i++){
+      znode->keys [i] = father->children[id]->keys [med + 1 + i];
+      ynode->keys [i] = father->children[id]->keys [i];
+
+      znode->children [i] = father->children[id]->children [med + 1 + i];
+      ynode->children [i] = father->children[id]->children [i];
+    }
+    znode->size = med;
+    ynode->size = med;
+    znode->children [med] = father->children[id]->children [2*med + 1];
+    ynode->children [med] = father->children[id]->children [med];
+
+    for (int j = S - 3; j >= id; j--){
+      father->keys [j + 1] = father->keys [j];
+      father->children [j + 2] = father->children [j + 1];
+    }
+
+    father->keys [id] = father->children[id]->keys [med];
+    father->size ++;
+    delete father->children[id];
+    father->children[id] = ynode;
+    father->children[id + 1] = znode;
+  }
   
   static void  insert (node_t** head, const value_t& val){
-    std::cout << "Insertando para un nodo B" << std::endl;
+    std::cout << "\nInsertando " << val << " para un nodo B" << std::endl;
+    node_t * x = *head;
+    if (!x){
+      *head = new BNode<T, S>;
+      (*head)->keys [0] = val;
+
+      return;
+    }
+
+    BNode<T, S>* noFull = NULL;
+    if ((*head)->keys [S-2] == -1)
+      noFull = (*head);
+    
+    while (x->children [0]){
+      int i = 0;
+      while  (x->keys[i] < val && i < S - 1 && x->children[i + 1]){
+        i++;
+      }
+      BNode <T, S>* y = x->children[i];
+      x = y;
+      if (x->keys [S-2] == -1){
+        noFull = x;
+      }
+    }
+
+    
+
+    if (noFull != x){
+      //std::cout << "Prepare to split \n";
+      if (!noFull){
+        BNode<T, S> * newroot = new BNode<T, S>;
+        newroot->children [0] = (*head);
+        (*head) = newroot;
+        noFull = newroot;
+      }
+      x = noFull;
+      while (x->children [0]){
+        int i = 0;
+        while  (x->keys[i] < val && i < S - 1 && x->children[i + 1]){
+          i++;
+        }
+        //std::cout << "SPlit in " << i << "\n";
+
+        //SPLIT
+        split (x, i);
+        if (val > x->keys [i])
+          i++;
+
+        x = x->children [i];
+      }
+    }
+
+    int i = S - 2;
+    //std::cout << "Prepare to insert\n" ;
+    
+    while (i >= 0 && (x->keys [i] > val || x->keys [i] == -1)){
+      x->keys [i + 1] = x->keys [i];
+      i--;
+    }
+    x->keys [i + 1] = val;
+    x->size++;
+
+
   }
 
   static void  print (node_t** head){
@@ -292,8 +384,19 @@ int main (){
   bsb_tree tree;
   ssb_tree tree2;
 
-  tree.insert(30);
-  tree.search (30);
+  tree.insert (1);
+  tree.insert (2);
+  tree.insert (3);
+  tree.insert (4);
+  tree.insert (5);
+  tree.insert (6);
+  tree.insert (7);
+  tree.insert (8);
+  tree.insert (9);
+  tree.insert (10);
+  tree.insert (11);
+  tree.insert (12);
+  tree.search (1);
   tree.print ();
 
   tree2.insert(20);
