@@ -18,7 +18,10 @@ public:
   public:
     int operator() (container_t a, value_t v, int size){
       int i = 0;
-
+      for (; i < size; i++){
+        if (a [i] >= v)
+          break;
+      }
       return i;
     }
   };
@@ -45,7 +48,19 @@ public:
   public:
     int operator() (container_t a, value_t v, int size){
 
-      int m=0;
+      int m, izq = 0, der = size - 1;
+      while (izq <= der){
+        m = (izq + der) / 2;
+        if ( v < a [m] )
+          der = m - 1;
+        else if ( v > a [m] )
+          izq = m + 1;
+        else
+          break;
+      }
+
+      if (a [m] < v)
+        m++;
 
       return m;
     }
@@ -156,7 +171,24 @@ struct SearchHelper <BN, SS_FLAGXX> {
   }
 
   static void search (node_t** head, const value_t& val){
-    std::cout << "Simple search busqueda" << std::endl;
+    functor_t func_search;
+    std::cout << "\nSimple search busqueda" << std::endl;
+    node_t * x = *head;
+    if (!x){
+      std::cout << "No hay root" << std::endl;
+    }
+    else{
+      int pos;
+      while (x){
+        pos = func_search (x->keys, val, x->size);
+        if (x->keys[pos] == val){
+          std::cout << "Se encontró " << val << std::endl;
+          return;
+        }
+        x = x->children [pos];
+      }
+      std::cout << "No se encontró " << val << std::endl;
+    }
   }
 };
 
@@ -175,7 +207,24 @@ struct SearchHelper <BN, BS_FLAGXX> {
   }
 
   static void search (node_t** head, const value_t& val){
-    std::cout << "Binary search busqueda" << std::endl;
+    std::cout << "\nBinary search busqueda" << std::endl;
+    functor_t func_search;
+    node_t * x = *head;
+    if (!x){
+      std::cout << "No hay root" << std::endl;
+    }
+    else{
+      int pos;
+      while (x){
+        pos = func_search (x->keys, val, x->size);
+        if (x->keys[pos] == val){
+          std::cout << "Se encontró " << val << std::endl;
+          return;
+        }
+        x = x->children [pos];
+      }
+      std::cout << "No se encontró " << val << std::endl;
+    }
   }
 };
 
@@ -269,13 +318,13 @@ struct TreeHelper<BNode<T, S>,B_NODE_FLAGXX>{
     std::cout << "\nInsertando " << val << " para un nodo B" << std::endl;
     node_t * x = *head;
     if (!x){
-      *head = new BNode<T, S>;
+      *head = new node_t;
       (*head)->keys [0] = val;
 
       return;
     }
 
-    BNode<T, S>* noFull = NULL;
+    node_t* noFull = NULL;
     if ((*head)->keys [S-2] == -1)
       noFull = (*head);
     
@@ -284,7 +333,7 @@ struct TreeHelper<BNode<T, S>,B_NODE_FLAGXX>{
       while  (x->keys[i] < val && i < S - 1 && x->children[i + 1]){
         i++;
       }
-      BNode <T, S>* y = x->children[i];
+      node_t * y = x->children[i];
       x = y;
       if (x->keys [S-2] == -1){
         noFull = x;
@@ -294,9 +343,8 @@ struct TreeHelper<BNode<T, S>,B_NODE_FLAGXX>{
     
 
     if (noFull != x){
-      //std::cout << "Prepare to split \n";
       if (!noFull){
-        BNode<T, S> * newroot = new BNode<T, S>;
+        node_t* newroot = new node_t;
         newroot->children [0] = (*head);
         (*head) = newroot;
         noFull = newroot;
@@ -307,7 +355,6 @@ struct TreeHelper<BNode<T, S>,B_NODE_FLAGXX>{
         while  (x->keys[i] < val && i < S - 1 && x->children[i + 1]){
           i++;
         }
-        //std::cout << "SPlit in " << i << "\n";
 
         //SPLIT
         split (x, i);
@@ -319,7 +366,6 @@ struct TreeHelper<BNode<T, S>,B_NODE_FLAGXX>{
     }
 
     int i = S - 2;
-    //std::cout << "Prepare to insert\n" ;
     
     while (i >= 0 && (x->keys [i] > val || x->keys [i] == -1)){
       x->keys [i + 1] = x->keys [i];
@@ -397,9 +443,23 @@ int main (){
   tree.insert (11);
   tree.insert (12);
   tree.search (1);
+  tree.search (8);
+  tree.search (12);
+  tree.search (17);
+  tree.search (21);
+  tree.search (0);
   tree.print ();
 
   tree2.insert(20);
+  tree2.insert(30);
+  tree2.insert(40);
+  tree2.insert(50);
+  tree2.insert(60);
+  tree2.insert(70);
+  tree2.insert(80);
   tree2.search (20);
+  tree2.search (70);
+  tree2.search (35);
+  tree2.search (85);
   tree2.print();
 }
