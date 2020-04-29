@@ -165,9 +165,19 @@ struct SearchHelper <BN, SS_FLAGXX> {
   typedef typename search_t::print_t print_t;
 
   static void print (node_t ** head) {
-    std::cout << "Simple search print" << std::endl;
+    //std::cout << "Simple search print" << std::endl;
     print_t print_t;
-    print_t();
+    //print_t();
+    if (*head){
+      int i = 0;
+      for (; i < (*head)->size + 1; i++){
+        print (&(*head)->children [i]);
+      }
+      i = 0;
+      for (; i < (*head)->size; i++){
+        std::cout << (*head)->keys [i] << " ";
+      }
+    }
   }
 
   static void search (node_t** head, const value_t& val){
@@ -201,9 +211,19 @@ struct SearchHelper <BN, BS_FLAGXX> {
   typedef typename search_t::print_t print_t;
 
   static void print (node_t ** head) {
-    std::cout << "Binary search print" << std::endl;
     print_t print_t;
-    print_t();
+    //print_t();
+    //preorder
+    if (*head){
+      int i = 0;
+      for (; i < (*head)->size; i++){
+        std::cout << (*head)->keys [i] << " ";
+      }
+      i = 0;
+      for (; i < (*head)->size + 1; i++){
+        print (&(*head)->children [i]);
+      }
+    }
   }
 
   static void search (node_t** head, const value_t& val){
@@ -283,6 +303,7 @@ template<typename T, int S>
 struct TreeHelper<BNode<T, S>,B_NODE_FLAGXX>{
   typedef BNode<T, S>  node_t;
   typedef typename node_t::value_t value_t;
+  typedef typename node_t::print_t print_t;
 
   static void split (node_t * father, int id){
     node_t * ynode = new node_t;
@@ -378,7 +399,10 @@ struct TreeHelper<BNode<T, S>,B_NODE_FLAGXX>{
   }
 
   static void  print (node_t** head){
+    print_t print_t;
+    print_t ();
     SearchHelper <node_t, SearchTraits <typename node_t::search_t>::flag_type> :: print (head);
+    std::cout << std::endl;
   }
 
   static void search (node_t** head, const value_t& val){
